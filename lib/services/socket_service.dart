@@ -11,11 +11,22 @@ enum ServerStatus {
 
 class SocketService with ChangeNotifier {
 
+  // IP para dispositivo físico
   // ignore: non_constant_identifier_names
   final String _DIR_IP = "192.168.1.15";
 
+  // IP para dispositivo emulado
+  // ignore: non_constant_identifier_names
+  final String _DIR_IP_EMU = "10.0.2.2";
+
   ServerStatus _serverStatus = ServerStatus.Connecting;
-    get serverStatus => this._serverStatus;
+    ServerStatus get serverStatus => this._serverStatus;
+
+  IO.Socket _socket;
+    IO.Socket get socket => this._socket;
+
+
+  Function get emit => this._socket.emit;
 
 
   SocketService() {
@@ -23,26 +34,22 @@ class SocketService with ChangeNotifier {
   }
 
   void _initConfig() {
-    IO.Socket socket = IO.io('http://$_DIR_IP:3000', {
+    this._socket = IO.io('http://$_DIR_IP_EMU:3000', {
       'transports': ['websocket'],
       'autoConnect': true
     });
 
 
-    socket.on('connect', (_) {
+    this._socket.on('connect', (_) {
       this._serverStatus = ServerStatus.Online;
 
       notifyListeners();
     });
 
-    socket.on('disconnect', (_) {
+    this._socket.on('disconnect', (_) {
       this._serverStatus = ServerStatus.Offline;
 
       notifyListeners();
-    });
-
-    socket.on('nuevo-mensaje', (payload) {
-      print('nuevo-mensaje: $payload');
     });
   }
 
